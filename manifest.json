@@ -1,0 +1,19 @@
+{
+  "name": "wind chimes",
+  "manifest_version": 2,
+  "version": "0.1",
+  "description": "Network traffic blowing through the chimes",
+
+  "permissions": [
+    "webRequest",
+    "activeTab",
+    "http://*/",
+    "https://*/"
+  ],
+  "background": {
+    "scripts": [
+      "chimes.js"
+    ],
+    "persistent": true
+  }
+}
