@@ -1,0 +1,11 @@
+{
+  "name": "wind-chimes",
+  "version": "1.0.0",
+  "main": "chimes.js",
+  "repository": "git@github.com:m4rk3r/wind-chimes.git",
+  "author": "Mark Beasley <mbeasl1@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "tone": "^14.7.58"
+  }
+}
