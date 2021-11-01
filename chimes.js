@@ -1,24 +1,36 @@
 
-const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-Tone.start()
-const notes = ['A','B','C','D','E','F'];
-let min = 0;
+let min = 1;
 let max = 1;
 const queue = [];
 let active = false;
+
+const chimes = {
+  A1: 'chimes/3bagbrew__barn-chime1.mp3',
+  B1: 'chimes/3bagbrew__barn-chime2.mp3',
+  C1: 'chimes/3bagbrew__barn-chime3.mp3',
+  D1: 'chimes/3bagbrew__barn-chime4.mp3',
+};
+
+const notes = Object.keys(chimes).map(k => k.replace('1', ''));
+
+const sampler = new Tone.Sampler({
+  urls: chimes,
+  release: 1,
+  baseUrl: 'chime-src/files/'
+}).toDestination();
 
 const scale = (num, in_min, in_max, out_min, out_max) => {
   return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 setInterval(() => {
-  if (queue.length) {
+  for (i = 0; i < 4 && queue.length > 0; i++) {
     const v = queue.shift();
-    const o = Math.round(scale(v, min, max, 6, 1));
+    const o = Math.round(scale(v, min, max, 3, 1));
     const d = scale(v, min, max, 0.1, 1);
-    synth.triggerAttackRelease(`${notes[Math.round(Math.random() * (notes.length - 1))]}${o}`, d);
+    sampler.triggerAttack(`${notes[Math.floor(Math.random() * notes.length)]}${o}`, Tone.now(), d);
   }
-}, 25);
+}, 50);
 
 const unpack = (details) => {
   const cl = details.responseHeaders.find(h => h.name.match(/content-length/i));
@@ -42,7 +54,6 @@ chrome.storage.local.get('wcEnabled', (res) => {
   }
 })
 
-console.log(chrome)
 
 chrome.browserAction.onClicked.addListener((tab) => {
   chrome.storage.local.get(['wcEnabled'], res => {

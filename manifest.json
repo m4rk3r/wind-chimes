@@ -1,7 +1,7 @@
 {
   "name": "wind chimes",
   "manifest_version": 2,
-  "version": "0.1",
+  "version": "0.2",
   "description": "A breeze of packets blowing through chimes",
   "browser_action": {},
   "permissions": [
