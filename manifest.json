@@ -3,7 +3,9 @@
   "manifest_version": 2,
   "version": "0.2",
   "description": "A breeze of packets blowing through chimes",
-  "browser_action": {},
+  "browser_action": {
+    "default_popup": "volume.html"
+  },
   "permissions": [
     "webRequest",
     "activeTab",

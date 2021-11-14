@@ -3,6 +3,7 @@ let min = 1;
 let max = 1;
 const queue = [];
 let active = false;
+let volume = 0;
 
 const chimes = {
   A1: 'chimes/3bagbrew__barn-chime1.mp3',
@@ -22,6 +23,10 @@ const sampler = new Tone.Sampler({
 const scale = (num, in_min, in_max, out_min, out_max) => {
   return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+
+const linearToLog = (val) => {
+  return 6.02 * Math.log2(val) - 40;
+};
 
 setInterval(() => {
   for (i = 0; i < 4 && queue.length > 0; i++) {
@@ -43,34 +48,44 @@ const unpack = (details) => {
   }
 }
 
-chrome.storage.local.get('wcEnabled', (res) => {
+chrome.storage.local.get('windChimesVolume', (res) => {
+  volume = parseInt(res.windChimesVolume);
   chrome.browserAction.setIcon({ path: {
-    '16': `${res.wcEnabled?'on':'off'}.png`,
+    '16': `${volume > 0 ?'on':'off'}.png`,
   }});
 
 
-  if (res.wcEnabled) {
+  if (volume > 0) {
+    console.log('setting vol', volume)
     chrome.webRequest.onResponseStarted.addListener(unpack, {urls: ["<all_urls>"]}, ["responseHeaders"]);
+    sampler.volume.value = linearToLog(volume);
   }
-})
+});
 
 
-chrome.browserAction.onClicked.addListener((tab) => {
-  chrome.storage.local.get(['wcEnabled'], res => {
-    const enabled = !res.wcEnabled;
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.hasOwnProperty('volume')) {
+    // get current volume on popup open
+    const vol = parseInt(request.volume);
+    if (vol === -1) {
+      sendResponse({volume});
+    } else { // set volume
+      if (vol > 0 && volume === 0) {
+        chrome.browserAction.setIcon({ path: {
+          '16': 'on.png',
+        }});
+        chrome.webRequest.onResponseStarted.addListener(unpack, {urls: ["<all_urls>"]}, ["responseHeaders"]);
+      } else if (vol === 0 && volume > 0) {
+        chrome.browserAction.setIcon({ path: {
+          '16': 'off.png',
+        }});
+        chrome.webRequest.onResponseStarted.removeListener(unpack);
+      }
 
-    // update storage
-    chrome.storage.local.set({'wcEnabled': enabled});
+      chrome.storage.local.set({'windChimesVolume': vol});
 
-    chrome.browserAction.setIcon({ path: {
-      '16': `${enabled?'on':'off'}.png`,
-    }});
-
-    // notify content script
-    if (enabled) {
-      chrome.webRequest.onResponseStarted.addListener(unpack, {urls: ["<all_urls>"]}, ["responseHeaders"]);
-    } else {
-      chrome.webRequest.onResponseStarted.removeListener(unpack);
+      volume = vol;
+      sampler.volume.value = linearToLog(vol);
     }
-  });
+  }
 });

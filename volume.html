@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style media="screen">
+      body {
+        width: 25px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      input {
+        transform: rotate(-90deg);
+        height: 130px;
+      }
+      button {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: color .125s ease-in-out;
+      }
+      button:hover {
+        color: blue;
+      }
+    </style>
+    <script src="volume.js" charset="utf-8" defer></script>
+  </head>
+  <body>
+    <button id="on">on</button>
+    <input id="chime-volume" type="range" value="0" min="0" max="100" step="1"></input>
+    <button id="off">off</button>
+  </body>
+</html>
