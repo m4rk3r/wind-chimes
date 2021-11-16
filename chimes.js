@@ -49,16 +49,22 @@ const unpack = (details) => {
 }
 
 chrome.storage.local.get('windChimesVolume', (res) => {
-  volume = parseInt(res.windChimesVolume);
-  chrome.browserAction.setIcon({ path: {
-    '16': `${volume > 0 ?'on':'off'}.png`,
-  }});
+  if (['number', 'string'].includes(typeof res.windChimesVolume)) {
+    volume = parseInt(res.windChimesVolume);
+    chrome.browserAction.setIcon({ path: {
+      '16': `${volume > 0 ?'on':'off'}.png`,
+    }});
 
 
-  if (volume > 0) {
-    console.log('setting vol', volume)
-    chrome.webRequest.onResponseStarted.addListener(unpack, {urls: ["<all_urls>"]}, ["responseHeaders"]);
-    sampler.volume.value = linearToLog(volume);
+    if (volume > 0) {
+      console.log('setting vol', volume)
+      chrome.webRequest.onResponseStarted.addListener(unpack, {urls: ["<all_urls>"]}, ["responseHeaders"]);
+      sampler.volume.value = linearToLog(volume);
+    }
+  } else {
+    chrome.browserAction.setIcon({ path: {
+      '16': 'off.png',
+    }});
   }
 });
 
