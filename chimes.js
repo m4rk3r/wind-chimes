@@ -4,6 +4,7 @@ let max = 1;
 const queue = [];
 let active = false;
 let volume = 0;
+let iter = null;
 
 const chimes = {
   A1: 'chimes/3bagbrew__barn-chime1.mp3',
@@ -28,14 +29,21 @@ const linearToLog = (val) => {
   return 6.02 * Math.log2(val) - 40;
 };
 
-setInterval(() => {
-  for (i = 0; i < 4 && queue.length > 0; i++) {
-    const v = queue.shift();
-    const o = Math.round(scale(v, min, max, 3, 1));
-    const d = scale(v, min, max, 0.1, 1);
-    sampler.triggerAttack(`${notes[Math.floor(Math.random() * notes.length)]}${o}`, Tone.now(), d);
-  }
-}, 50);
+const startLoop = () => {
+  iter = setInterval(() => {
+    for (i = 0; i < 4 && queue.length > 0; i++) {
+      const v = queue.shift();
+      const o = Math.round(scale(v, min, max, 3, 1));
+      const d = scale(v, min, max, 0.1, 1);
+      sampler.triggerAttack(`${notes[Math.floor(Math.random() * notes.length)]}${o}`, Tone.now(), d);
+    }
+  }, 50);
+}
+
+const stopLoop = () => {
+  clearInterval(iter);
+  iter = null;
+}
 
 const unpack = (details) => {
   const cl = details.responseHeaders.find(h => h.name.match(/content-length/i));
@@ -57,7 +65,7 @@ chrome.storage.local.get('windChimesVolume', (res) => {
 
 
     if (volume > 0) {
-      console.log('setting vol', volume)
+      startLoop();
       chrome.webRequest.onResponseStarted.addListener(unpack, {urls: ["<all_urls>"]}, ["responseHeaders"]);
       sampler.volume.value = linearToLog(volume);
     }
@@ -80,11 +88,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.browserAction.setIcon({ path: {
           '16': 'on.png',
         }});
+        startLoop();
         chrome.webRequest.onResponseStarted.addListener(unpack, {urls: ["<all_urls>"]}, ["responseHeaders"]);
       } else if (vol === 0 && volume > 0) {
         chrome.browserAction.setIcon({ path: {
           '16': 'off.png',
         }});
+        stopLoop();
         chrome.webRequest.onResponseStarted.removeListener(unpack);
       }
 
