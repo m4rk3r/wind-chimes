@@ -58,7 +58,7 @@ const unpack = (details) => {
 
 chrome.storage.local.get('windChimesVolume', (res) => {
   if (['number', 'string'].includes(typeof res.windChimesVolume)) {
-    volume = parseInt(res.windChimesVolume);
+    volume = parseInt(res.windChimesVolume, 10);
     chrome.browserAction.setIcon({ path: {
       '16': `${volume > 0 ?'on':'off'}.png`,
     }});
@@ -80,7 +80,7 @@ chrome.storage.local.get('windChimesVolume', (res) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.hasOwnProperty('volume')) {
     // get current volume on popup open
-    const vol = parseInt(request.volume);
+    const vol = parseInt(request.volume, 10);
     if (vol === -1) {
       sendResponse({volume});
     } else { // set volume
