@@ -1,23 +1,21 @@
 {
   "name": "wind chimes",
-  "manifest_version": 2,
-  "version": "0.4",
+  "manifest_version": 3,
+  "version": "0.5",
   "description": "A breeze of packets blowing through chimes",
-  "browser_action": {
+  "action": {
     "default_popup": "volume.html"
   },
   "permissions": [
     "webRequest",
-    "activeTab",
     "storage",
+    "offscreen"
+  ],
+  "host_permissions": [
     "http://*/",
     "https://*/"
   ],
   "background": {
-    "scripts": [
-      "node_modules/tone/build/Tone.js",
-      "chimes.js"
-    ],
-    "persistent": true
+    "service_worker": "background.js"
   }
 }
