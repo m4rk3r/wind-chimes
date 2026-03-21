@@ -22,16 +22,18 @@ const sampler = new Tone.Sampler({
 }).toDestination();
 
 const scale = (num, in_min, in_max, out_min, out_max) => {
+  if (in_max === in_min) return (out_min + out_max) / 2;
   return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 const linearToLog = (val) => {
+  if (val <= 0) return -Infinity;
   return 6.02 * Math.log2(val) - 40;
 };
 
 const startLoop = () => {
   iter = setInterval(() => {
-    for (i = 0; i < 4 && queue.length > 0; i++) {
+    for (let i = 0; i < 4 && queue.length > 0; i++) {
       const v = queue.shift();
       const o = Math.round(scale(v, min, max, 3, 1));
       const d = scale(v, min, max, 0.1, 1);
@@ -48,9 +50,11 @@ const stopLoop = () => {
 const unpack = (details) => {
   const cl = details.responseHeaders.find(h => h.name.match(/content-length/i));
   if (cl) {
-    min = Math.min(min, cl.value);
-    max = Math.max(max, cl.value);
-    queue.push(cl.value);
+    const size = parseInt(cl.value, 10);
+    if (isNaN(size)) return;
+    min = Math.min(min, size);
+    max = Math.max(max, size);
+    queue.push(size);
   } else {
     console.log('Content-Length not found', details.responseHeaders);
   }
@@ -101,7 +105,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       chrome.storage.local.set({'windChimesVolume': vol});
 
       volume = vol;
-      sampler.volume.value = linearToLog(vol);
+      if (vol > 0) {
+        sampler.volume.value = linearToLog(vol);
+      }
     }
   }
 });
